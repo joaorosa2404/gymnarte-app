@@ -1,6 +1,9 @@
 ﻿namespace GymnArteApp.Server.Models.Enums
 {
-    public class UserRole
+    public enum UserRole
     {
+        Admin,
+        PersonalTrainer,
+        Partner
     }
 }
