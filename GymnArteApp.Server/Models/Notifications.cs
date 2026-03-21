@@ -1,13 +1,14 @@
 ﻿namespace GymnArteApp.Server.Models
 {
-    public class Notifications
+    public class Notification
     {
-        //descricao; dtcriacao; lida; user;
-        public int Id { get; set; }
+        public int NotificationId { get; set; }
         public string Description { get; set; } = string.Empty;
         public bool Read { get; set; } = false;
-        public User User { get; set; } = null!;
         public DateTime CreationDate { get; set; }
 
+        // FK
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
     }
 }
