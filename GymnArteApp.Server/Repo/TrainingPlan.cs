@@ -1,4 +1,4 @@
-﻿namespace GymnArteApp.Server.Models
+﻿namespace GymnArteApp.Server.Repo
 {
     public class TrainingPlan
     {

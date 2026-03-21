@@ -18,8 +18,7 @@ namespace GymnArteApp.Server.Models
         public DateTime? UpdatedDate { get; set; }
         public User? UpdatedUser { get; set; }
         public UserScope Scope { get; set; } = null!;
-        public BiometricData BiometricData { get; set; } = null!;
-        public Notifications? Notifications { get; set; } 
+        public IEnumerable<BiometricData> BiometricData { get; set; } = null!; //array com todos os registos de histórico de evolução
         public TrainingPlan? TrainingPlan { get; set; }
 
     }
