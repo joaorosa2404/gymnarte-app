@@ -7,5 +7,6 @@
         public string Name { get; set; } = null!;
         public string Notes { get; set; } = null!;
         public ExerciseType ExerciseType { get; set; } = null!;
+        public ICollection<ExerciseTrainingPlan> ExerciseTrainingPlan { get; set; } = null!;
     }
 }
