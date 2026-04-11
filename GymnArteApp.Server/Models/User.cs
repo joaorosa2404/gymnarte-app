@@ -22,9 +22,10 @@ namespace GymnArteApp.Server.Models
         public User? UpdatedUser { get; set; }
 
         // Navegações
-        public UserScope UserScope { get; set; } = null!;                           // 1 User → 1 Scope
+        public UserScope UserScope { get; set; } = null!;
+        public int UserScopeId { get; set; }
         public ICollection<BiometricData> BiometricData { get; set; } = [];        // 1 User → N BiometricData
-        public ICollection<Notifications> Notifications { get; set; } = [];         // 1 User → N Notifications
+        public ICollection<Notification> Notifications { get; set; } = [];         // 1 User → N Notifications
         public ICollection<TrainingPlan> TrainingPlans { get; set; } = [];         // 1 User → N TrainingPlans
     }
 }

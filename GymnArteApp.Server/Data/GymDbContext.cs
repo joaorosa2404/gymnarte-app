@@ -7,6 +7,14 @@ namespace GymnArteApp.Server.Data
         public GymDbContext(DbContextOptions<GymDbContext> options) : base(options) { }
 
         public DbSet<Models.User> Users { get; set; }
+        public DbSet<Models.UserScope> UserScopes { get; set; }
+        public DbSet<Models.BiometricData> BiometricData { get; set; }
+        public DbSet<Models.TrainingPlan> TrainingPlans { get; set; }
+        public DbSet<Models.Exercise> Exercises { get; set; }
+        public DbSet<Models.ExerciseTrainingPlan> ExerciseTrainingPlans { get; set; }
+        public DbSet<Models.ExerciseType> ExerciseTypes { get; set; }
+        public DbSet<Models.Notification> Notifications { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
