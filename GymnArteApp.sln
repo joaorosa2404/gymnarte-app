@@ -1,11 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36603.0 d17.14
+VisualStudioVersion = 17.14.36603.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "gymnarteapp.client", "gymnarteapp.client\gymnarteapp.client.esproj", "{2EF4EA7B-2270-024B-9CDC-D908CD34121D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GymnArteApp.Server", "GymnArteApp.Server\GymnArteApp.Server.csproj", "{95275882-C6F3-4B3F-8E78-47D8C160AD30}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{F032282B-FEEB-43CF-9768-0505688CD918}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "gymnarteapp.backoffice", "GymnArteApp.Backoffice\gymnarteapp.backoffice.esproj", "{191BAD0C-82C9-55BC-9A05-41CC00E23870}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,9 +29,20 @@ Global
 		{95275882-C6F3-4B3F-8E78-47D8C160AD30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95275882-C6F3-4B3F-8E78-47D8C160AD30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95275882-C6F3-4B3F-8E78-47D8C160AD30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{191BAD0C-82C9-55BC-9A05-41CC00E23870}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{191BAD0C-82C9-55BC-9A05-41CC00E23870}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{191BAD0C-82C9-55BC-9A05-41CC00E23870}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{191BAD0C-82C9-55BC-9A05-41CC00E23870}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{191BAD0C-82C9-55BC-9A05-41CC00E23870}.Release|Any CPU.Build.0 = Release|Any CPU
+		{191BAD0C-82C9-55BC-9A05-41CC00E23870}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2EF4EA7B-2270-024B-9CDC-D908CD34121D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{95275882-C6F3-4B3F-8E78-47D8C160AD30} = {F032282B-FEEB-43CF-9768-0505688CD918}
+		{191BAD0C-82C9-55BC-9A05-41CC00E23870} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2976087E-C4E6-4D5C-8A2D-D96189D15BF2}

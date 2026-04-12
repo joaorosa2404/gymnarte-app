@@ -1,3 +1,8 @@
+using GymnArteApp.Server.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Yarp.ReverseProxy;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,20 +10,28 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//MICROSOFT IDENTITY 
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
+    .AddIdentityCookies();
+builder.Services.AddIdentityCore<IdentityUser>()
+    .AddEntityFrameworkStores<GymDbContext>()
+    .AddApiEndpoints();
+
 // Repositories
-builder.Services.AddSingleton<GymnArteApp.Server.Repo.UserRepository>();
-builder.Services.AddSingleton<GymnArteApp.Server.Repo.ExerciseRepository>();
-builder.Services.AddSingleton<GymnArteApp.Server.Repo.TrainingPlanRepository>();
+builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.IUser, GymnArteApp.Server.Repo.User>();
+builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.IUserScope, GymnArteApp.Server.Repo.UserScope>();
+builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.IExercise, GymnArteApp.Server.Repo.Exercise>();
+builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.IExerciseType, GymnArteApp.Server.Repo.ExerciseType>();
+builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.ITrainingPlan, GymnArteApp.Server.Repo.TrainingPlan>();
+builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.IExerciseTrainingPlan, GymnArteApp.Server.Repo.ExerciseTrainingPlan>();
+builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.INotifications, GymnArteApp.Server.Repo.Notifications>();
+builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.IBiometricData, GymnArteApp.Server.Repo.BiometricData>();
 
-// Register interfaces to implementations
-builder.Services.AddSingleton<GymnArteApp.Server.Repo.Interface.IUserRepository>(sp => sp.GetRequiredService<GymnArteApp.Server.Repo.UserRepository>());
-builder.Services.AddSingleton<GymnArteApp.Server.Repo.Interface.IExerciseRepository>(sp => sp.GetRequiredService<GymnArteApp.Server.Repo.ExerciseRepository>());
-builder.Services.AddSingleton<GymnArteApp.Server.Repo.Interface.ITrainingPlanRepository>(sp => sp.GetRequiredService<GymnArteApp.Server.Repo.TrainingPlanRepository>());
-
-// Services (business layer)
-builder.Services.AddScoped<GymnArteApp.Server.Services.IUserService, GymnArteApp.Server.Services.UserService>();
-builder.Services.AddScoped<GymnArteApp.Server.Services.IExerciseService, GymnArteApp.Server.Services.ExerciseService>();
-builder.Services.AddScoped<GymnArteApp.Server.Services.ITrainingPlanService, GymnArteApp.Server.Services.TrainingPlanService>();
+// Business & Services
+//builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IUser, GymnArteApp.Server.Business.User>();
+//builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IExercise, GymnArteApp.Server.Business.Exercise>();
+//builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.ITrainingPlan, GymnArteApp.Server.Business.TrainingPlan>();
 
 var app = builder.Build();
 

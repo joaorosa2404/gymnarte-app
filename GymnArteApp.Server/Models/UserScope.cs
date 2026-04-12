@@ -16,5 +16,6 @@ namespace GymnArteApp.Server.Models
         // Audit
         public int? UpdatedUserId { get; set; }
         public User? UpdatedUser { get; set; }
+        public bool IsActive { get; set; } = true;
     }
 }

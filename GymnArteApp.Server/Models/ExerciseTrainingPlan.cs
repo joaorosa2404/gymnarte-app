@@ -11,5 +11,6 @@
         public Exercise Exercise { get; set; } = null!;
         public int TrainingPlanId { get; set; }
         public TrainingPlan TrainingPlan { get; set; } = null!;
+        public bool IsActive { get; set; }
     }
 }
