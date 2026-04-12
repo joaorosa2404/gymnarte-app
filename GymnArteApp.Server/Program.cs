@@ -29,9 +29,14 @@ builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.INotifications, Gym
 builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.IBiometricData, GymnArteApp.Server.Repo.BiometricData>();
 
 // Business & Services
-//builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IUser, GymnArteApp.Server.Business.User>();
-//builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IExercise, GymnArteApp.Server.Business.Exercise>();
-//builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.ITrainingPlan, GymnArteApp.Server.Business.TrainingPlan>();
+builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IUser, GymnArteApp.Server.Business.User>();
+builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IUserScope, GymnArteApp.Server.Business.UserScope>();
+builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IExercise, GymnArteApp.Server.Business.Exercise>();
+builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IExerciseType, GymnArteApp.Server.Business.ExerciseType>();
+builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.ITrainingPlan, GymnArteApp.Server.Business.TrainingPlan>();
+builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IExerciseTrainingPlan, GymnArteApp.Server.Business.ExerciseTrainingPlan>();
+builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.INotifications, GymnArteApp.Server.Business.Notifications>();
+builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IBiometricData, GymnArteApp.Server.Business.BiometricData>();
 
 var app = builder.Build();
 

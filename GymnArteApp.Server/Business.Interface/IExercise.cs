@@ -2,5 +2,11 @@
 {
     public interface IExercise
     {
+        Task<IEnumerable<Models.Exercise>> GetAllExercisesAsync();
+        Task<Models.Exercise> GetExerciseByIdAsync(int id);
+        Task<IEnumerable<Models.Exercise>> GetExercisesByTypeIdAsync(int typeId);
+        Task<Models.Exercise> CreateExerciseAsync(Models.Exercise exerc);
+        Task<Models.Exercise> UpdateExerciseAsync(int id, Models.Exercise exerc, string token);
+        Task<bool> DeleteExerciseAsync(int id, string token);
     }
 }
