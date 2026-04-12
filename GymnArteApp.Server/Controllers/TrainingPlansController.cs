@@ -1,45 +1,97 @@
-//using System.Collections.Generic;
-//using System.Threading.Tasks;
-//using GymnArteApp.Server.Models;
-//using GymnArteApp.Server.Business.Interface;
-//using Microsoft.AspNetCore.Mvc;
+using GymnArteApp.Server.Business.Interface;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-//namespace GymnArteApp.Server.Controllers
-//{
-//    [ApiController]
-//    [Route("api/[controller]")]
-//    public class TrainingPlansController : ControllerBase
-//    {
-//        private readonly Business.Interface.ITrainingPlan _svc;
-//        public TrainingPlansController(ITrainingPlan svc) => _svc = svc;
+namespace GymnArteApp.Server.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class TrainingPlansController : ControllerBase
+    {
+        private readonly ITrainingPlan _svc;
 
-//        [HttpGet]
-//        public Task<IEnumerable<TrainingPlan>> GetAll() => _svc.GetAllAsync();
+        public TrainingPlansController(ITrainingPlan svc) => _svc = svc;
 
-//        [HttpGet("{id:int}")]
-//        public async Task<ActionResult<TrainingPlan>> GetById(int id)
-//        {
-//            var p = await _svc.GetByIdAsync(id);
-//            if (p == null) return NotFound();
-//            return Ok(p);
-//        }
+        private string BearerToken =>
+            Request.Headers["Authorization"].ToString().Replace("Bearer ", "").Trim();
 
-//        [HttpPost]
-//        public async Task<ActionResult<TrainingPlan>> Create([FromBody] TrainingPlan plan)
-//        {
-//            var created = await _svc.CreateAsync(plan);
-//            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-//        }
+        // GET api/trainingplans
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Models.TrainingPlan>>> GetAll()
+        {
+            var plans = await _svc.GetAllTrainingPlansAsync();
+            return Ok(plans);
+        }
 
-//        [HttpPut("{id:int}")]
-//        public async Task<IActionResult> Update(int id, [FromBody] TrainingPlan plan)
-//        {
-//            if (id != plan.TrainingPlanId) return BadRequest();
-//            await _svc.UpdateAsync(plan);
-//            return NoContent();
-//        }
+        // GET api/trainingplans/{id}
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<Models.TrainingPlan>> GetById(int id)
+        {
+            try
+            {
+                var plan = await _svc.GetTrainingPlanByIdAsync(id);
+                return Ok(plan);
+            }
+            catch (Exception ex) when (ex.Message.Contains("not found"))
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
 
-//        [HttpDelete("{id:int}")]
-//        public Task Delete(int id) => _svc.DeleteAsync(id);
-//    }
-//}
+        // GET api/trainingplans/user/{userId}
+        [HttpGet("user/{userId:int}")]
+        public async Task<ActionResult<Models.TrainingPlan>> GetByUser(int userId)
+        {
+            var plan = await _svc.GetTrainingPlanByUserIdAsync(userId);
+            return plan is null ? NotFound() : Ok(plan);
+        }
+
+        // GET api/trainingplans/exercisetype/{exerciseTypeId}
+        [HttpGet("exercisetype/{exerciseTypeId:int}")]
+        public async Task<ActionResult<Models.TrainingPlan>> GetByExerciseType(int exerciseTypeId)
+        {
+            var plan = await _svc.GetTrainingPlanByExerciseTypeAsync(exerciseTypeId);
+            return plan is null ? NotFound() : Ok(plan);
+        }
+
+        // GET api/trainingplans/user/{userId}/exercisetype/{exerciseTypeId}
+        [HttpGet("user/{userId:int}/exercisetype/{exerciseTypeId:int}")]
+        public async Task<ActionResult<Models.TrainingPlan>> GetByUserAndType(int userId, int exerciseTypeId)
+        {
+            var plan = await _svc.GetTrainingPlanByUserAndExerciseTypeAsync(userId, exerciseTypeId);
+            return plan is null ? NotFound() : Ok(plan);
+        }
+
+        // POST api/trainingplans
+        [HttpPost]
+        public async Task<ActionResult<Models.TrainingPlan>> Create([FromBody] Models.TrainingPlan plan)
+        {
+            var created = await _svc.CreateTrainingPlanAsync(plan, BearerToken);
+            return CreatedAtAction(nameof(GetById), new { id = created.TrainingPlanId }, created);
+        }
+
+        // PUT api/trainingplans/{id}
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<Models.TrainingPlan>> Update(int id, [FromBody] Models.TrainingPlan plan)
+        {
+            try
+            {
+                var updated = await _svc.UpdateTrainingPlanAsync(plan, id, BearerToken);
+                return Ok(updated);
+            }
+            catch (Exception ex) when (ex.Message.Contains("not found"))
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        // DELETE api/trainingplans/{id}
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Disable(int id)
+        {
+            var result = await _svc.DisableTrainingPlanAsync(id, BearerToken);
+            return result ? NoContent() : NotFound();
+        }
+    }
+}
