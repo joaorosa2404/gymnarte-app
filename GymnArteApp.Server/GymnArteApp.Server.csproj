@@ -1,12 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <SpaRoot>..\gymnarteapp.client</SpaRoot>
-    <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
-    <SpaProxyServerUrl>https://localhost:61195</SpaProxyServerUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,9 +16,6 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
-      <Version>8.*-*</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -37,11 +31,16 @@
     <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
   </ItemGroup>
 
-  <ItemGroup>
+    <ItemGroup>
     <ProjectReference Include="..\gymnarteapp.client\gymnarteapp.client.esproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+        <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-  </ItemGroup>
+    </ItemGroup>
+    <ItemGroup>
+	    <ProjectReference Include="..\gymnarteapp.backoffice\gymnarteapp.backoffice.esproj">
+		    <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+	    </ProjectReference>
+    </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Evolve\Migrations\" />

@@ -5,6 +5,10 @@ using Yarp.ReverseProxy;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<GymDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -17,6 +21,18 @@ builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
 builder.Services.AddIdentityCore<IdentityUser>()
     .AddEntityFrameworkStores<GymDbContext>()
     .AddApiEndpoints();
+
+//Reverse Proxy
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+builder.Services.AddHttpClient("Clients.gymnarteapp.backoffice", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(60);
+});
+builder.Services.AddHttpClient("Clients.gymnarteapp.client", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(60);
+});
 
 // Repositories
 builder.Services.AddScoped<GymnArteApp.Server.Repo.Interface.IUser, GymnArteApp.Server.Repo.User>();
@@ -38,6 +54,17 @@ builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IExerciseTraini
 builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.INotifications, GymnArteApp.Server.Business.Notifications>();
 builder.Services.AddScoped<GymnArteApp.Server.Business.Interface.IBiometricData, GymnArteApp.Server.Business.BiometricData>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("GymnArteClientsPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174") // Portas do Vite
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 app.UseDefaultFiles();
@@ -52,10 +79,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseCors("GymnArteClientsPolicy");
 
+app.MapControllers();
+app.MapGroup("/auth").MapIdentityApi<IdentityUser>();
 app.MapFallbackToFile("/index.html");
+app.MapReverseProxy();
 
 app.Run();

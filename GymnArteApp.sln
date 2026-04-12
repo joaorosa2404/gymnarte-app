@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "gymnarteapp.client", "gymnarteapp.client\gymnarteapp.client.esproj", "{2EF4EA7B-2270-024B-9CDC-D908CD34121D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GymnArteApp.Server", "GymnArteApp.Server\GymnArteApp.Server.csproj", "{95275882-C6F3-4B3F-8E78-47D8C160AD30}"
+	ProjectSection(ProjectDependencies) = postProject
+		{191BAD0C-82C9-55BC-9A05-41CC00E23870} = {191BAD0C-82C9-55BC-9A05-41CC00E23870}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clients", "Clients", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
