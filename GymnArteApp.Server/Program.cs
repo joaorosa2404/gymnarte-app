@@ -1,4 +1,4 @@
-using GymnArteApp.Server.Data;
+﻿using GymnArteApp.Server.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Yarp.ReverseProxy;
