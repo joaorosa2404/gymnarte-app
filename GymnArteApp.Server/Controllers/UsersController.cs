@@ -10,8 +10,8 @@ namespace GymnArteApp.Server.Controllers
     [Authorize]
     public class UsersController : ControllerBase
     {
-        private readonly IUser                        _userSvc;
-        private readonly IPasswordHasher<Models.User> _hasher;
+        private readonly IUser                         _userSvc;
+        private readonly IPasswordHasher<Models.User>  _hasher;
 
         public UsersController(IUser userSvc, IPasswordHasher<Models.User> hasher)
         {
@@ -26,44 +26,38 @@ namespace GymnArteApp.Server.Controllers
         [HttpGet]
         [Authorize(Roles = "Admin,PersonalTrainer")]
         public async Task<ActionResult<IEnumerable<Models.User>>> GetAll()
-        {
-            var users = await _userSvc.GetAllUsersAsync();
-            return Ok(users);
-        }
+            => Ok(await _userSvc.GetAllUsersAsync());
 
         // GET api/users/{id}
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Models.User>> GetById(int id)
         {
-            try
-            {
-                var user = await _userSvc.GetUserByIdAsync(id);
-                return Ok(user);
-            }
+            try   { return Ok(await _userSvc.GetUserByIdAsync(id)); }
             catch (Exception ex) when (ex.Message.Contains("not found"))
-            {
-                return NotFound(new { message = ex.Message });
-            }
+                  { return NotFound(new { message = ex.Message }); }
         }
 
         // GET api/users/scope/{scopeId}
         [HttpGet("scope/{scopeId:int}")]
         [Authorize(Roles = "Admin,PersonalTrainer")]
         public async Task<ActionResult<IEnumerable<Models.User>>> GetByScope(int scopeId)
-        {
-            var users = await _userSvc.GetUsersByScopeAsync(scopeId);
-            return Ok(users);
-        }
+            => Ok(await _userSvc.GetUsersByScopeAsync(scopeId));
 
-        // POST api/users
+        // GET api/users/role/{role}   (Admin | PersonalTrainer | Partner)
+        [HttpGet("role/{role}")]
+        [Authorize(Roles = "Admin,PersonalTrainer")]
+        public async Task<ActionResult<IEnumerable<Models.User>>> GetByRole(
+            [FromRoute] Models.Enums.UserRole role)
+            => Ok(await _userSvc.GetUsersByRoleAsync(role));
+
+        // POST api/users  (registo — AllowAnonymous para auto-registo de clientes)
         [HttpPost]
-        [AllowAnonymous] // registo aberto; podes mudar para [Authorize(Roles = "Admin")]
+        [AllowAnonymous]
         public async Task<ActionResult<Models.User>> Create([FromBody] Models.User user)
         {
-            // Hash da password antes de guardar
+            // Hash da password antes de persistir
             user.Password = _hasher.HashPassword(user, user.Password);
-
-            var created = await _userSvc.CreateUserAsync(user);
+            var created   = await _userSvc.CreateUserAsync(user);
             return CreatedAtAction(nameof(GetById), new { id = created.UserId }, created);
         }
 
@@ -71,18 +65,16 @@ namespace GymnArteApp.Server.Controllers
         [HttpPut("{id:int}")]
         public async Task<ActionResult<Models.User>> Update(int id, [FromBody] Models.User user)
         {
-            try
-            {
-                var updated = await _userSvc.UpdateUserAsync(id, user, BearerToken);
-                return Ok(updated);
-            }
+            // Se a password for enviada, hash antes de guardar
+            if (!string.IsNullOrWhiteSpace(user.Password))
+                user.Password = _hasher.HashPassword(user, user.Password);
+
+            try   { return Ok(await _userSvc.UpdateUserAsync(id, user, BearerToken)); }
             catch (Exception ex) when (ex.Message.Contains("not found"))
-            {
-                return NotFound(new { message = ex.Message });
-            }
+                  { return NotFound(new { message = ex.Message }); }
         }
 
-        // DELETE api/users/{id}
+        // DELETE api/users/{id}  (soft delete)
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)

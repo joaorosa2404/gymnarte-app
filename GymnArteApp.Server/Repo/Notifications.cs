@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using GymnArteApp.Server.Repo.Interface;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -8,99 +8,75 @@ namespace GymnArteApp.Server.Repo
     {
         private readonly Data.GymDbContext _context;
 
-        public Notifications(Data.GymDbContext context)
+        public Notifications(Data.GymDbContext context) => _context = context;
+
+        public async Task<Models.Notification?> GetNotificationByIdAsync(int id)
         {
-            _context = context;
+            return await _context.Notifications
+                .Include(n => n.User)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(n => n.NotificationId == id);
         }
 
-        public async Task<Models.Notification> GetNotificationByIdAsync(int id)
+        // Retorna TODAS as notificações do utilizador (corrigido — o original só devolvia a primeira)
+        public async Task<IEnumerable<Models.Notification>> GetNotificationsByUserIdAsync(int userId)
         {
-            try
-            {
-                var notification = await _context.Notifications
-                    .Include(n => n.User)
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(n => n.NotificationId == id);
-
-                return notification;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"An error occurred while retrieving the notification with ID {id}.", ex);
-            }
+            return await _context.Notifications
+                .Where(n => n.UserId == userId)
+                .OrderByDescending(n => n.CreationDate)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
-        public async Task<Models.Notification> GetNotificationByUserIdAsync(int userId)
+        public async Task<IEnumerable<Models.Notification>> GetUnreadByUserIdAsync(int userId)
         {
-            try
-            {
-                // Seguindo o padrão do exemplo que retorna FirstOrDefault mesmo em listas
-                var notification = await _context.Notifications
-                    .Where(n => n.UserId == userId)
-                    .Include(n => n.User)
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync();
-
-                return notification;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"An error occurred while retrieving the notification for user ID {userId}.", ex);
-            }
+            return await _context.Notifications
+                .Where(n => n.UserId == userId && !n.Read)
+                .OrderByDescending(n => n.CreationDate)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<Models.Notification> CreateNotificationAsync(Models.Notification notif, string token)
         {
-            try
-            {
-                notif.CreationDate = DateTime.UtcNow;
-                notif.Read = false;
+            notif.CreationDate = DateTime.UtcNow;
+            notif.Read         = false;
 
-                _context.Notifications.Add(notif);
-                await _context.SaveChangesAsync();
-
-                return notif;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while creating the notification.", ex);
-            }
+            _context.Notifications.Add(notif);
+            await _context.SaveChangesAsync();
+            return notif;
         }
 
-        public async Task<bool> DeleteNotificationsAsync(int id, string token)
+        public async Task<bool> MarkAsReadAsync(int id)
         {
-            try
-            {
-                var notification = await _context.Notifications.FirstOrDefaultAsync(n => n.NotificationId == id);
+            var notif = await _context.Notifications.FindAsync(id);
+            if (notif is null) return false;
 
-                if (notification == null)
-                {
-                    throw new Exception($"Notification with ID {id} not found.");
-                }
+            notif.Read = true;
+            await _context.SaveChangesAsync();
+            return true;
+        }
 
-                _context.Notifications.Remove(notification);
-                return await _context.SaveChangesAsync() > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"An error occurred while deleting the notification with ID {id}.", ex);
-            }
+        public async Task<bool> DeleteNotificationAsync(int id, string token)
+        {
+            var notification = await _context.Notifications.FindAsync(id);
+            if (notification is null) return false;
+
+            _context.Notifications.Remove(notification);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         private int? GetUserIdFromToken(string token)
         {
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtToken = handler.ReadJwtToken(token);
-                var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "nameid" || c.Type == "sub")?.Value;
-
+                var handler     = new JwtSecurityTokenHandler();
+                var jwtToken    = handler.ReadJwtToken(token);
+                var userIdClaim = jwtToken.Claims
+                    .FirstOrDefault(c => c.Type == "userId" || c.Type == "sub")?.Value;
                 return userIdClaim != null ? int.Parse(userIdClaim) : null;
             }
-            catch
-            {
-                return null;
-            }
+            catch { return null; }
         }
     }
 }

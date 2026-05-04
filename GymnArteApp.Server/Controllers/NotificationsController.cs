@@ -27,11 +27,13 @@ namespace GymnArteApp.Server.Controllers
 
         // GET api/notifications/user/{userId}
         [HttpGet("user/{userId:int}")]
-        public async Task<ActionResult<Models.Notification>> GetByUser(int userId)
-        {
-            var notif = await _svc.GetNotificationByUserIdAsync(userId);
-            return notif is null ? NotFound() : Ok(notif);
-        }
+        public async Task<ActionResult<IEnumerable<Models.Notification>>> GetByUser(int userId)
+            => Ok(await _svc.GetNotificationsByUserIdAsync(userId));
+
+        // GET api/notifications/user/{userId}/unread
+        [HttpGet("user/{userId:int}/unread")]
+        public async Task<ActionResult<IEnumerable<Models.Notification>>> GetUnreadByUser(int userId)
+            => Ok(await _svc.GetUnreadByUserIdAsync(userId));
 
         // POST api/notifications
         [HttpPost]
@@ -42,11 +44,20 @@ namespace GymnArteApp.Server.Controllers
             return CreatedAtAction(nameof(GetById), new { id = created.NotificationId }, created);
         }
 
+        // PATCH api/notifications/{id}/read
+        [HttpPatch("{id:int}/read")]
+        public async Task<IActionResult> MarkAsRead(int id)
+        {
+            var result = await _svc.MarkAsReadAsync(id);
+            return result ? NoContent() : NotFound();
+        }
+
         // DELETE api/notifications/{id}
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _svc.DeleteNotificationsAsync(id, BearerToken);
+            var result = await _svc.DeleteNotificationAsync(id, BearerToken);
             return result ? NoContent() : NotFound();
         }
     }

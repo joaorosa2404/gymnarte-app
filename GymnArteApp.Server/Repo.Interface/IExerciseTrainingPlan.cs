@@ -1,10 +1,9 @@
-﻿namespace GymnArteApp.Server.Repo.Interface
+namespace GymnArteApp.Server.Repo.Interface
 {
     public interface IExerciseTrainingPlan
     {
-
         Task<IEnumerable<Models.ExerciseTrainingPlan>> GetAllExerciseTrainingPlansAsync();
-        Task<Models.ExerciseTrainingPlan> GetExerciseTrainingPlanByIdAsync(int id);
+        Task<Models.ExerciseTrainingPlan?> GetExerciseTrainingPlanByIdAsync(int id);
         Task<IEnumerable<Models.ExerciseTrainingPlan>> GetExerciseTrainingPlansByExerciseIdAsync(int exerciseId);
         Task<IEnumerable<Models.ExerciseTrainingPlan>> GetExerciseTrainingPlansByTrainingPlanIdAsync(int trainingPlanId);
         Task<IEnumerable<Models.ExerciseTrainingPlan>> GetExerciseTrainingPlansByExerciseAndTrainingPlanIdAsync(int exerciseId, int trainingPlanId);

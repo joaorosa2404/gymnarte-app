@@ -1,5 +1,6 @@
-﻿using GymnArteApp.Server.Repo.Interface;
+using GymnArteApp.Server.Repo.Interface;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace GymnArteApp.Server.Repo
 {
@@ -7,101 +8,104 @@ namespace GymnArteApp.Server.Repo
     {
         private readonly Data.GymDbContext _context;
 
-        public User(Data.GymDbContext context)
-        {
-            _context = context;
-        }
+        public User(Data.GymDbContext context) => _context = context;
 
         public async Task<IEnumerable<Models.User>> GetAllUsersAsync()
         {
-            try
-            {
-                var users = await _context.Users.AsNoTracking().ToListAsync();
-                return users;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while retrieving users.", ex);
-            }
+            return await _context.Users
+                .Include(u => u.UserScope)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
-        public async Task<Models.User> GetUserByIdAsync(int id)
+        public async Task<Models.User?> GetUserByIdAsync(int id)
         {
-            try
-            {
-                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == id);
-                return user;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"An error occurred while retrieving the user with ID {id}.", ex);
-            }
+            return await _context.Users
+                .Include(u => u.UserScope)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserId == id);
         }
 
         public async Task<IEnumerable<Models.User>> GetUsersByScopeAsync(int scopeId)
         {
-            try
-            {
-                var users = await _context.Users.AsNoTracking().Where(u => (int)u.UserScopeId == scopeId).ToListAsync();
-                return users;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"An error occurred while retrieving users with scope ID {scopeId}.", ex);
-            }
+            // scopeId aqui é o UserScope.UserScopeId (PK do scope)
+            return await _context.UserScopes
+                .Where(us => us.UserScopeId == scopeId)
+                .Include(us => us.User)
+                .Select(us => us.User)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Models.User>> GetUsersByRoleAsync(Models.Enums.UserRole role)
+        {
+            return await _context.UserScopes
+                .Where(us => us.Role == role && us.IsActive)
+                .Include(us => us.User)
+                .Select(us => us.User)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<Models.User> CreateUserAsync(Models.User user)
         {
-            try
-            {
-                user.CreationDate = DateTime.UtcNow;
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-                return user;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while creating the user.", ex);
-            }
+            user.CreationDate = DateTime.UtcNow;
+            user.IsActive     = true;
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return user;
         }
 
         public async Task<Models.User> UpdateUserAsync(int id, Models.User user, string token)
         {
+            // Buscar entidade tracked (sem AsNoTracking) para o Update funcionar
+            var existing = await _context.Users.FindAsync(id)
+                ?? throw new Exception($"User with ID {id} not found.");
+
+            existing.UserName    = user.UserName;
+            existing.Email       = user.Email;
+            existing.Name        = user.Name;
+            existing.Surname     = user.Surname;
+            existing.BirthDate   = user.BirthDate;
+            existing.Gender      = user.Gender;
+            existing.Phone       = user.Phone;
+            existing.UpdatedDate  = DateTime.UtcNow;
+            existing.UpdatedUserId = GetUserIdFromToken(token);
+
+            // Password só é atualizada se vier preenchida no payload
+            if (!string.IsNullOrWhiteSpace(user.Password))
+                existing.Password = user.Password;
+
+            await _context.SaveChangesAsync();
+            return existing;
+        }
+
+        public async Task<bool> DeleteUserAsync(int id, string token)
+        {
+            // Soft delete — preserva histórico (biometria, planos, etc.)
+            var user = await _context.Users.FindAsync(id);
+            if (user is null) return false;
+
+            user.IsActive      = false;
+            user.UpdatedDate   = DateTime.UtcNow;
+            user.UpdatedUserId = GetUserIdFromToken(token);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        private int? GetUserIdFromToken(string token)
+        {
             try
             {
-                var existingUser = await this.GetUserByIdAsync(id);
-                if (existingUser == null)
-                {
-                    throw new Exception($"User with ID {id} not found.");
-                }
-                existingUser.UserName = user.UserName;
-                existingUser.Email = user.Email;
-                existingUser.Password = user.Password;
-                existingUser.BirthDate = user.BirthDate;
-                existingUser.Gender = user.Gender;
-                existingUser.Name = user.Name;
-                existingUser.Surname = user.Surname;
-                existingUser.Phone = user.Phone;
-                existingUser.UpdatedDate = DateTime.UtcNow;
-                existingUser.UpdatedUserId = user.UserId;
-
-                _context.Users.Update(existingUser);
-                await _context.SaveChangesAsync();
-
-                return existingUser;
+                var handler      = new JwtSecurityTokenHandler();
+                var jwtToken     = handler.ReadJwtToken(token);
+                var userIdClaim  = jwtToken.Claims
+                    .FirstOrDefault(c => c.Type == "userId" || c.Type == "sub")?.Value;
+                return userIdClaim != null ? int.Parse(userIdClaim) : null;
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"An error occurred while updating the user with ID {id}.", ex);
-            }
+            catch { return null; }
         }
-
-        public Task<bool> DeleteUserAsync(int id, string token)
-        {
-            throw new NotImplementedException();
-        }
-
-
     }
 }
